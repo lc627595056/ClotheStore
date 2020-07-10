@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.clothingStore.atn.shop.clothes.dao.IClothDao">
+
+    <!--用户查询商品-->
+    <select id="selectCloth" resultType="Cloth">
+        select * from cloth
+        <where>
+            <if test="id != null and id != ''">
+                clothSort = #{id}
+            </if>
+        </where>
+
+    </select>
+
+    <!--      管理员查询商品-->
+    <select id="AdminSelectClothList" resultMap="ClothMap">
+        select * from cloth
+        <where>
+            <if test="clothName != null and clothName != ''">
+                and clothName like '%' #{clothName} '%'
+            </if>
+        </where>
+        limit #{pageModel.firstLimitParam},#{pageModel.pageSize}
+    </select>
+    <resultMap id="ClothMap" type="Cloth">
+        <id property="clothID" column="clothID"/>
+        <association property="clothsort"
+                     javaType="ClothSort"
+                     select="selectClothSortName"
+                     column="clothSort"/>
+    </resultMap>
+    <select id="selectClothSortName" resultType="ClothSort">
+        select * from clothsort where clothSortID = #{clothSort}
+    </select>
+
+    <!--按类别查询商品-->
+   <!-- <select id="selectClothByCategory" resultType="Cloth">
+        select * from cloth where clothSort = #{id}
+    </select>-->
+
+    <!--搜索商品-->
+    <select id="selectClothByName" resultType="Cloth">
+        select * from cloth
+        <where>
+            <if test="clothName != null and clothName != ''">
+                clothName like '%' #{clothName} '%'
+            </if>
+        </where>
+    </select>
+
+    <!--查询商品详细信息-->
+    <select id="selectClothById" resultType="Cloth">
+        select * from cloth where clothID = #{id}
+    </select>
+
+    <!--修改商品-->
+    <update id="updateCloth">
+        update cloth
+        <set>
+            <if test="clothName != null and clothName != ''">
+                clothName=#{clothName},
+            </if>
+            <if test="clothPrice > 0">
+                clothPrice=#{clothPrice},
+            </if>
+            <if test="clothSort > 0">
+                clothSort=#{clothSort},
+            </if>
+            <if test="clothImg != null and clothImg != ''">
+                clothImg=#{clothImg},
+            </if>
+        </set>
+        where clothID = #{clothID}
+    </update>
+
+    <!--删除商品-->
+    <delete id="deleteCloth">
+        delete from cloth where clothID = #{clothID}
+    </delete>
+    <!--查询商品的所有类型-->
+    <select id="selectALLClothSort" resultType="ClothSort">
+        select * from clothsort
+    </select>
+
+    <!--添加商品-->
+    <insert id="insertClothA">
+        insert into cloth(clothName,clothPrice,clothSort,clothImg)
+        values(#{clothName},#{clothPrice},#{clothSort},#{clothImg})
+    </insert>
+
+    <!--后台查询消费订单-->
+    <select id="selectConsumeList" resultMap="ConsumeItemMap">
+        select * from consumeitem,cloth,consume,user
+        <where>
+            cloth.clothID = consumeitem.cloth_id
+            and consume.user_id = user.userID
+            and consume.consumeID = consumeitem.order_id
+            <if test="consumeID != null and consumeID != ''">
+              and consumeitem.order_id like '%' #{consumeID} '%'
+            </if>
+        </where>
+        order by consume.consumeDate desc
+        limit #{pageModel.firstLimitParam},#{pageModel.pageSize}
+    </select>
+    <resultMap id="ConsumeItemMap" type="ConsumeItem">
+        <association property="user"
+                     javaType="User"
+                     select="selectUserByID"
+                     column="user_id"/>
+        <association property="consume"
+                     javaType="Consume"
+                     select="selectConsumeByID"
+                     column="order_id"/>
+        <collection property="cloth"
+                    ofType="Cloth"
+                    select="selectClothByID"
+                    column="cloth_id"/>
+    </resultMap>
+    <select id="selectUserByID" resultType="User">
+        select * from user where userID = #{user_id}
+    </select>
+    <select id="selectConsumeByID" resultType="Consume">
+        select * from consume where consumeID = #{order_id}
+    </select>
+    <select id="selectClothByID" resultType="Cloth">
+        select * from cloth where clothID = #{cloth_id}
+    </select>
+
+<!--    查询用户订单-->
+    <select id="selectConsumeListByUser" resultMap="ConsumeItemMap">
+        select * from consumeitem,cloth,consume,user
+        <where>
+            cloth.clothID = consumeitem.cloth_id
+            and consume.user_id = user.userID
+            and consume.consumeID = consumeitem.order_id
+            <if test="consumeID != null and consumeID != ''">
+                and consumeitem.order_id like '%' #{consumeID} '%'
+            </if>
+        </where>
+    </select>
+    <!--删除订单-->
+    <delete id="deleteConsume">
+        delete from consume where consumeID = #{consumeID}
+    </delete>
+
+    <!--删除订单项-->
+    <delete id="deleteConsumeItem">
+        delete from consumeitem where order_id = #{consumeID}
+    </delete>
+
+    <!--查询商品个数-->
+    <select id="selectClothCount" resultType="Integer">
+        select count(*) from cloth
+        <where>
+            <if test="clothName != null and clothName != ''">
+                clothName like '%' #{clothName} '%'
+            </if>
+        </where>
+    </select>
+
+    <!--查询订单个数-->
+    <select id="selectConsumeCount" resultType="Integer">
+        select count(*) from consumeitem
+        <where>
+            <if test="consumeID != null and consumeID != ''">
+                order_id like '%' #{consumeID} '%'
+            </if>
+        </where>
+    </select>
+
+    <!--用户查询自己的订单个数-->
+    <select id="selectConsumeByUsrIDCount" resultType="Integer">
+        select count(*) from consume where user_id = #{id}
+    </select>
+
+</mapper>

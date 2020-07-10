@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.clothingStore.atn.shop.user.dao.IUserDao">
+
+<!--    注册新用户-->
+    <insert id="insertUser">
+        insert into user(userName,userPassword,userRname,userSex,userPhone,userAddress,userEmail,userConsume,activeCode)
+        values (#{userName},#{userPassword},#{userRname},#{userSex},#{userPhone},#{userAddress},#{userEmail},#{userConsume},#{activeCode})
+    </insert>
+
+<!--    查询会员名是否被占用-->
+    <select id="selectUserName" resultType="User">
+        select * from user where userName=#{userName}
+    </select>
+
+<!--    查询邮箱是否被占用-->
+    <select id="selectEmail" resultType="User">
+        select * from user where userEmail=#{email}
+    </select>
+
+<!--    激活用户-->
+    <update id="updateActive">
+        update user set state=1 where activeCode=#{activeCode}
+    </update>
+<!--    用户登录-->
+    <select id="selectUserByLogin" resultType="User">
+        select * from user where userName=#{userName} and userPassword=#{userPassword}
+    </select>
+<!--    更改密码-->
+   <update id="updatePassWord">
+       update user set userPassword=#{userPassword},userPhone=#{userPhone},userAddress=#{userAddress} where userEmail=#{userEmail}
+   </update>
+
+<!--    用户查看订单-->
+    <select id="selectConsumeByUsrID" resultMap="consumeMap">
+        select * from consume where user_id=#{id}
+        order by consumeDate desc
+        limit #{pageModel.firstLimitParam},#{pageModel.pageSize}
+    </select>
+    <resultMap id="consumeMap" type="Consume">
+        <id property="consumeID" column="consumeID"/>
+        <association property="user" javaType="User" select="selectUserById" column="user_id"/>
+    </resultMap>
+    <select id="selectUserById" resultType="User">
+        select * from user where userID=#{user_id}
+    </select>
+
+    <!--查询用户的订单个数-->
+    <!--<select id="selectConsumeByUsrIDCount" resultType="Integer">
+        select count (*) from consume where user_id = #{id}
+    </select>-->
+
+
+    <!--管理员操作//////////////////////////////////////////////////-->
+
+    <!--查询会员列表-->
+    <select id="selectUser" resultType="User">
+        select * from user
+        <where>
+            role = '普通用户'
+            <if test="name != null and name != ''">
+                and userRname like '%' #{name} '%'
+            </if>
+        </where>
+        limit #{pageModel.firstLimitParam},#{pageModel.pageSize}
+    </select>
+
+    <!--查询用户详细信息-->
+    <select id="selectUserByID" resultType="User">
+        select * from user where userID = #{userID}
+    </select>
+
+    <!--修改用户信息-->
+    <update id="updateUserA">
+        update user set userName = #{userName},userPAssword = ${userPassword},userSex = #{userSex}
+        where userID = #{userID}
+    </update>
+
+    <!--删除用户-->
+    <delete id="deleteUserByIDA">
+        delete from user where userID = #{userID}
+    </delete>
+
+    <!--    更改用户金额-->
+    <update id="updateUserConsume">
+        update user set userConsume=userConsume+#{money} where userID=#{user_id}
+    </update>
+
+    <select id="selectUserCount" resultType="Integer">
+        select count(*) from user
+        <where>
+            role = '普通用户'
+            <if test="name != null and name != ''">
+                and userRname like '%' #{name} '%'
+            </if>
+        </where>
+    </select>
+
+</mapper>

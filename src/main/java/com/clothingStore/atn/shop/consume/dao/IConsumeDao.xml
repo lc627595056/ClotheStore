@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.clothingStore.atn.shop.consume.dao.IConsumeDao">
+<!--    插入订单orders对应的信息-->
+    <insert id="insertConsume">
+        insert into consume (consumeID,consumeName,consumePhone,consumeAddress,consumeSum,user_id)
+        values (#{consumeID},#{consumeName},#{consumePhone},#{consumeAddress},#{consumeSum},#{user.userID})
+    </insert>
+<!--    循环插入该订单对应的订单项信息-->
+    <insert id="insertConsumeItem">
+        insert into consumeitem (order_id,cloth_id,user_id,clothSize,buyNum)
+        values (#{consume.consumeID},#{cloth.clothID},#{user.userID},#{clothSize},#{buyNum})
+    </insert>
+<!--    修改支付状态-->
+    <update id="updateConsumeState">
+        update consume set consumeState=1 where consumeID=#{id}
+    </update>
+    <!--    按照id查询订单-->
+    <select id="selectConsumeById" resultMap="consumeMap">
+        select * from consume where consumeID=#{id}
+    </select>
+    <resultMap id="consumeMap" type="Consume">
+        <id column="consumeID" property="consumeID"/>
+        <association property="user" javaType="User" select="selectUserById" column="user_id"/>
+    </resultMap>
+    <select id="selectUserById" resultType="User">
+        select * from user where userID=#{user_id}
+    </select>
+</mapper>

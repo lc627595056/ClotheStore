@@ -1,0 +1,6 @@
+.option12 .owl-controls .owl-prev:hover, 
+.option12 .owl-controls .owl-next:hover{
+	background-color:#ff3366;
+	border-color: #ff3366;
+	color: #fff;
+}
